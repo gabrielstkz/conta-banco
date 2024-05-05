@@ -3,6 +3,7 @@ const chalk = require('chalk');
 const fs = require('fs').promises;
 
 const ACCOUNTS_DIR = 'accounts';
+const LOGS_DIR = 'logs';
 const regex = /^\d+$/;
 const helpMsg = 'press Ctrl + C to exit';
 
@@ -155,6 +156,12 @@ async function addAmount(accountName, amount) {
 
     console.log(chalk.bgGreen.black(` Depósito de R$${amount} feito com sucesso! `));
     console.log(chalk.bgGreen.black(` Saldo de R$${accountData.balance} `));
+    const depositLog = `Deposito efetuado com sucesso no valor de R$${amount} para ${accountName} | ${getHour()} \n`;
+    await fs.appendFile(
+      `${LOGS_DIR}/depositos.txt`,
+      depositLog,
+      (err) => console.log(err)
+    );
   } catch (err) {
     console.log(chalk.red(err.message));
   }
@@ -212,6 +219,12 @@ async function removeAmount(accountName, amount) {
 
     console.log(chalk.bgGreen.black(` Saque de R$${amount} feito com sucesso! `));
     console.log(chalk.bgGreen.black(` Saldo de R$${accountData.balance} `));
+    const withdrawLog = `Saque efetuado com sucesso no valor de R$${amount} de ${accountName} | ${getHour()} \n`;
+    await fs.appendFile(
+      `${LOGS_DIR}/saques.txt`,
+      withdrawLog,
+      (err) => console.log(err)
+    );
   } catch (err) {
     console.log(chalk.red(err.message));
   }
@@ -263,7 +276,7 @@ async function getAccountBalance() {
 
     // Obtém os dados da conta e exibe o saldo
     const accountData = await getAccount(accountName);
-    console.log(chalk.bgBlueBright.black(` A conta ${accountName} tem o saldo de R$${accountData.balance} `));
+    console.log(chalk.bgBlueBright.black(` A conta ${accountName} tem o saldo de R$${accountData.balance} `))
     await operation();
   } catch (err) {
     console.log(err);
@@ -292,7 +305,7 @@ async function transfer() {
     const { account2 } = await inquirer.prompt([
       {
         name: 'account2',
-        message: `${helpMsg} \n  Qual conta você deseja transferir:`
+        message: chalk.bold(helpMsg) + '  \n Qual conta você deseja transferir: '
       }
     ]);
 
@@ -308,7 +321,7 @@ async function transfer() {
     console.log(chalk.bgGreen.black(` A conta ${account2} tem o saldo de R$${account2Data.balance} `));
 
     await transferValue(account1, account2);
-
+    await operation();
   } catch (err) {
     console.log(err);
   }
@@ -346,10 +359,21 @@ async function transferValue(acc1, acc2) {
     );
 
     console.log(chalk.bgGreen.black.bold(` A transferencia do valor de R$${amount} de ${acc1} para ${acc2} foi concluída com sucesso! `));
-    operation();
+    const transferLog = `Transferencia efetuada com sucesso no valor de R$${amount} de ${acc1} para ${acc2} | ${getHour()} \n`;
+    await fs.appendFile(
+      `${LOGS_DIR}/transferencias.txt`,
+      transferLog,
+      (err) => console.log(err)
+    );
   } catch (err) {
     console.log(err);
   }
+}
+
+function getHour() {
+  const day = new Date().toLocaleDateString();
+  const hour = new Date().toLocaleTimeString();
+  return day + ' ' + hour;
 }
 
 // Inicia a operação do banco
