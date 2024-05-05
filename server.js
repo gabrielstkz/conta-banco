@@ -373,7 +373,7 @@ async function transferValue(acc1, acc2) {
 function getHour() {
   const day = new Date().toLocaleDateString();
   const hour = new Date().toLocaleTimeString();
-  return day + ' ' + hour;
+  return `${day} ${hour}`;
 }
 
 // Inicia a operação do banco
